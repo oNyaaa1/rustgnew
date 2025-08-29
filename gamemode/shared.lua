@@ -34,16 +34,20 @@ local smart_include = function(f)
     end
 end
 
+function Logger(msg)
+    MsgC(Color(63, 163, 191), "[", Color(31, 119, 163), "GRust", Color(63, 163, 191), "] ", Color(200, 200, 200), msg .. "\n")
+end
+
 gRust.IncludeDir = function(dir)
     local fol = dir .. '/'
     local files, folders = file.Find(fol .. '*', "LUA")
     for _, f in ipairs(files) do
-        print("[gRust]" .. fol .. f)
+        Logger("[gRust]" .. fol .. f)
         smart_include(fol .. f)
     end
 
     for _, f in ipairs(folders) do
-        print("[gRust]" .. dir .. '/' .. f)
+        Logger("[gRust]" .. dir .. '/' .. f)
         gRust.IncludeDir(dir .. '/' .. f)
     end
 end
