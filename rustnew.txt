@@ -1,4 +1,4 @@
-"rustnewgo"
+"rustnew"
 {
 	"base"		    "base"
 	"title"		    "gRust"
