@@ -1,12 +1,9 @@
+DeriveGamemode("base")
 GM.Name = "gRust | Rust in Garry's Mod"
 GM.Author = ""
 GM.Email = ""
 GM.Website = ""
-gRust = gRust or {
-    Config = {},
-}
-
-CONFIG = CONFIG or {}
+gRust = gRust or {}
 LANG = LANG or {}
 local IncludeCL = CLIENT and include or AddCSLuaFile
 local IncludeSV = SERVER and include or function() end
@@ -28,11 +25,11 @@ gRust.IncludeSH = function(dir)
 end
 
 local smart_include = function(f)
-    if string.find(f, "_sv.lua") then
+    if string.find(f, "sv_") then
         return IncludeSV(f)
-    elseif string.find(f, "_cl.lua") then
+    elseif string.find(f, "cl_") then
         return IncludeCL(f)
-    else
+    elseif string.find(f, "sh_") then
         return IncludeSH(f)
     end
 end
@@ -41,23 +38,14 @@ gRust.IncludeDir = function(dir)
     local fol = dir .. '/'
     local files, folders = file.Find(fol .. '*', "LUA")
     for _, f in ipairs(files) do
+        print("[gRust]" .. fol .. f)
         smart_include(fol .. f)
     end
 
     for _, f in ipairs(folders) do
+        print("[gRust]" .. dir .. '/' .. f)
         gRust.IncludeDir(dir .. '/' .. f)
     end
 end
 
-gRust.IncludeDir("rustg/gamemode/libs")
-gRust.IncludeDir("rustg/gamemode/vgui")
-gRust.IncludeDir("rustg/gamemode/core")
-hook.Run("gRust.LoadedCore")
-gRust.IncludeDir("rustg/gamemode/modules")
-hook.Run("gRust.Loaded")
-function CONFIG:SendLanguage(lang, xs, ply)
-    net.Start("gRust.SendLanguage")
-    net.WriteString(lang)
-    net.WriteString(xs)
-    net.Send(ply)
-end
+gRust.IncludeDir("rustgnew/gamemode/main")
