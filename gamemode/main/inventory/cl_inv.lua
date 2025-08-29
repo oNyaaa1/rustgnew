@@ -34,6 +34,16 @@ function Bottom()
     DPanel[6] = vgui.Create("DPanel")
     DPanel[6]:SetPos(FixedWidth(0.82, 80 * 4 + Spacing + 20), h * 0.85)
     DPanel[6]:SetSize(80, 80)
+    for i = 1, 6 do
+        DPanel[i].Paint = function(me)
+            surface.SetMaterial(Material("materials/ui/background.png"))
+            surface.SetDrawColor(0,0,0, 100)
+            surface.DrawTexturedRect(0, 0, w, h)
+            surface.SetDrawColor(94,94,94, 150)
+            surface.DrawRect(0, 0, w, h)
+
+        end
+    end
 end
 
 Bottom()
