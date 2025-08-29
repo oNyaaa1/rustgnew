@@ -12,6 +12,24 @@ local IncludeSH = CLIENT and include or function(f)
     return include(f)
 end
 
+local meta = FindMetaTable("Player")
+function meta:GetHunger()
+    return self:GetNWInt("Hunger", 0)
+end
+
+function meta:GetThirst()
+    return self:GetNWInt("Thirst", 0)
+end
+
+local meta = FindMetaTable("Player")
+function meta:SetHunger(amy)
+    self:SetNWInt("Hunger", amy)
+end
+
+function meta:SetThirst(amy)
+    self:SetNWInt("Thirst", amy)
+end
+
 IncludeSH("config.lua")
 gRust.IncludeSV = SERVER and include or function() end
 gRust.IncludeCL = SERVER and AddCSLuaFile or include
