@@ -1,0 +1,8 @@
+"rustnewgo"
+{
+	"base"		    "base"
+	"title"		    "gRust"
+	"maps"		    ""
+	"category"	    "grust"
+	"menusystem"	"1"
+}

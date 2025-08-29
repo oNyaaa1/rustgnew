@@ -1,0 +1,6 @@
+AddCSLuaFile("shared.lua")
+AddCSLuaFile("config.lua")
+include("shared.lua")
+include("config.lua")
+AddCSLuaFile("lang/cl_english.lua")
+include("lang/cl_english.lua")
