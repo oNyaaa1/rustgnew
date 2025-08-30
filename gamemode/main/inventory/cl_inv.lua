@@ -61,6 +61,8 @@ end
 
 function Middle()
     if frame then return end
+    net.Start("RequestSlots")
+    net.SendToServer()
     frame = vgui.Create("DPanel")
     frame:SetSize(530, 418)
     frame:SetPos(w * 0.34, h * 0.38)
@@ -107,8 +109,6 @@ end
 
 net.Receive("SendSlots", function()
     slotData = net.ReadTable() or {}
-    net.Start("RequestSlots")
-    net.SendToServer()
     --ApplySavedSlots(slotData)
     --Bottom()
 end)
@@ -153,11 +153,11 @@ function Bottom()
         DPanel[i]:SetSize(80, 80)
         DPanel[i]:SetPos(w * 0.35 + ((i - 1) * 85), h * 0.85) -- spaced horizontally
         DPanel[i].Paint = function(me, w, h)
-            surface.SetMaterial(Material("ui/background.png"))
-            surface.SetDrawColor(255, 255, 255, 40)
+            surface.SetMaterial(Material("materials/ui/background.png"))
+            surface.SetDrawColor(0, 0, 0, 100)
             surface.DrawTexturedRect(0, 0, w, h)
             surface.SetDrawColor(94, 94, 94, 150)
-            surface.DrawOutlinedRect(0, 0, w, h)
+            surface.DrawRect(0, 0, w, h)
         end
 
         DPanel[i]:Receiver("myDNDname", DoDrop)
