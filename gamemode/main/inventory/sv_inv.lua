@@ -10,13 +10,11 @@ if not file.IsDir(slotDir, "DATA") then file.CreateDir(slotDir) end
 local function SavePlayerSlots(ply, data)
     local sid = ply:SteamID64()
     if not sid then return end
-    local ls = 0
     for k, v in pairs(data) do
-        if v.LastSlot == ls then ls = v.LastSlot end
+        if v.LastSlot == nil then v.LastSlot = 1 end
+        data[v.LastSlot] = nil
     end
 
-    table.remove(data, ls)
-    PrintTable(data)
     file.Write(slotDir .. "/" .. sid .. ".txt", util.TableToJSON(data, true))
 end
 

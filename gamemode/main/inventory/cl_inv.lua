@@ -16,39 +16,9 @@ local function ClearAllButtons()
     end
 end
 
--- Function to populate slots from NextSlot data
-local function PopulateSlots()
-    ClearAllButtons() -- Always clear first
-    for _, v in pairs(NextSlot) do
-        if v.NumberOnBoard then
-            local slotNum = v.NumberOnBoard
-            local parentPanel = nil
-            -- Determine which parent panel to use
-            if slotNum <= 30 and IsValid(pnl[slotNum]) then
-                parentPanel = pnl[slotNum]
-            elseif slotNum > 30 and IsValid(DPanel[slotNum - 30]) then
-                parentPanel = DPanel[slotNum - 30]
-            end
-
-            -- Create button only if we have a valid parent
-            if parentPanel then
-                but[slotNum] = vgui.Create('DImageButton')
-                but[slotNum]:SetImage(v.model or "materials/items/tools/rock.png")
-                but[slotNum]:Dock(FILL)
-                but[slotNum]:SetParent(parentPanel)
-                but[slotNum]:Droppable("myDNDname")
-            end
-        end
-    end
-end
-
--- Network receive - this is where duplication was happening
 net.Receive("SendSlots", function()
     slotData = net.ReadTable()
     NextSlot = slotData or {}
-    -- Always populate when we receive data, regardless of UI state
-    -- This ensures we have the latest data when UI opens
-    if IsValid(frame) and #pnl > 0 and #DPanel > 0 then PopulateSlots() end
 end)
 
 -- helper function
@@ -59,46 +29,33 @@ function table.KeyFromValue(tab, val)
     return nil
 end
 
--- example DoDrop, same one you use in Middle()
+local oldSlotIdx = 0
 local function DoDrop(parentPanel, panels, bDoDrop)
     if not bDoDrop then return end
-    table.Empty(NextSlot)
     local midIndex = table.KeyFromValue(pnl, parentPanel) or 0
     local botIndex = table.KeyFromValue(DPanel, parentPanel) or 0
-    -- figure out which slot this panel used to belong to
     local Slotidx = midIndex > 0 and midIndex or (botIndex > 0 and (botIndex + 30) or 1)
     for _, panel in ipairs(panels) do
-        if panel.oldSlotIdx == nil then panel.oldSlotIdx = 0 end
-        -- find which slot we dropped into
-        -- Find the old slot this panel came from
-        -- Remove any existing panel in the target slot
-        if IsValid(but[Slotidx]) then
-            but[Slotidx]:Remove()
-            but[Slotidx] = nil
-        end
-
-        -- Update NextSlot - remove old entry if it exists
-        -- Add new slot data
+        panel:SetParent(parentPanel)
+        panel:Dock(FILL)
         NextSlot[Slotidx] = {
             NumberOnBoard = Slotidx,
             model = "materials/items/tools/rock.png",
             PanelType = midIndex > 0 and "pnl" or "DPanel",
-            LastSlot = panel.oldSlotIdx,
+            LastSlot = oldSlotIdx,
         }
 
-        -- reparent the panel so it visually sticks
-        panel:SetParent(parentPanel)
-        panel:Dock(FILL)
         but[Slotidx] = panel
-        panel.oldSlotIdx = Slotidx
-        if panel.oldSlotIdx > 0 then
-            for i = #NextSlot, 1, -1 do
-                if i == panel.oldSlotIdx then table.remove(NextSlot, panel.oldSlotIdx) end
-            end
-        end
     end
 
-    PrintTable(NextSlot)
+   
+    for i = 1, #NextSlot do
+        NextSlot[oldSlotIdx] = {}
+        NextSlot[oldSlotIdx] = nil
+    end
+
+    oldSlotIdx = Slotidx
+    --PrintTable(NextSlot)
     net.Start("SaveSlots")
     net.WriteTable(NextSlot)
     net.SendToServer()
