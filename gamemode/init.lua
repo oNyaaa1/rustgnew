@@ -23,8 +23,18 @@ function GM:PlayerSpawn(pl)
     pl:SetHunger(math.random(30, 50))
     pl:SetThirst(math.random(60, 70))
     pl:SetModel("models/player/Group01/Male_01.mdl")
+    ply:SetupHands()
 end
 
-hook.Add("InitPostEntity", "WipeStart", function()
-    if game.GetMap() ~= "rust_highland_v1_3a" then game.ConsoleCommand("changelevel rust_highland_v1_3a\n") end
-end)
+-- Choose the model for hands according to their player model.
+function GM:PlayerSetHandsModel(ply, ent)
+    local simplemodel = player_manager.TranslateToPlayerModelName(ply:GetModel())
+    local info = player_manager.TranslatePlayerHands(simplemodel)
+    if info then
+        ent:SetModel(info.model)
+        ent:SetSkin(info.skin)
+        ent:SetBodyGroups(info.body)
+    end
+end
+
+hook.Add("InitPostEntity", "WipeStart", function() if game.GetMap() ~= "rust_highland_v1_3a" then game.ConsoleCommand("changelevel rust_highland_v1_3a\n") end end)

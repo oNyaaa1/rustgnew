@@ -81,7 +81,7 @@ function Inventory:AddItem(wep, slot)
             PanelType = emptySlot <= 30 and "pnl" or "DPanel",
         })
 
-        self:Give("weapon_rock")
+        self:Give("rust_rock")
         -- Save to file
         SavePlayerSlots(self, data)
     end

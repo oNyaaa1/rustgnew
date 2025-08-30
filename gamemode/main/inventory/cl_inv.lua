@@ -68,7 +68,7 @@ function UpdateSus()
                 btn[i]:Droppable("myDNDname")
                 btn[i].DoClick = function()
                     net.Start("DropASlot")
-                    net.WriteString("weapon_rock")
+                    net.WriteString("rust_rock")
                     net.SendToServer()
                 end
 
