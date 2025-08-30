@@ -52,7 +52,7 @@ function Inventory:AddItem(wep, names)
     if not hasItems then
         -- Find the first empty slot
         local emptySlot = 1
-        for i = 1, 36 do
+        for i = 1, 30 do
             local slotOccupied = false
             for _, item in pairs(data) do
                 if item.NumberOnBoard == i then
@@ -71,7 +71,7 @@ function Inventory:AddItem(wep, names)
         table.insert(data, {
             NumberOnBoard = emptySlot,
             model = "materials/items/tools/rock.png",
-            PanelType = emptySlot <= 30 and "DPanel" or "pnl",
+            PanelType = emptySlot <= 6 and "DPanel" or "pnl",
             Type = wep,
             Name = names,
             Bar = "active",
@@ -90,7 +90,7 @@ end
 
 net.Receive("DropASlot", function(len, ply)
     local tbl = net.ReadString()
-    --ply:DropWeapon(ply:GetWeapon(tbl))
+    ply:SelectWeapon(tbl)
 end)
 
 -- Track if player has already been given starter items this session
@@ -104,9 +104,6 @@ hook.Add("PlayerDeath", "DEathFDelte", function(ply)
     local data = LoadPlayerSlots(ply)
     table.Empty(data)
     SavePlayerSlots(ply, data)
-    net.Start("SendSlots")
-    net.WriteTable(data)
-    net.Send(ply)
 end)
 
 -- Clean up tracking when player disconnects
