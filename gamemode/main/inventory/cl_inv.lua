@@ -7,6 +7,7 @@ local DPanel = {}
 local slotData = {}
 local NextSlot = {}
 local btn = {}
+
 net.Receive("SendSlots", function()
     slotData = net.ReadTable()
     NextSlot = slotData or {}  
@@ -26,8 +27,6 @@ local function DoDrop(parentPanel, panels, bDoDrop)
     if not bDoDrop then return end
     parentPanel2 = parentPanel
     
-
-
     for _, panel in ipairs(panels) do
         panel:SetParent(parentPanel)
         panel:Dock(FILL)
@@ -114,7 +113,7 @@ function Bottom()
 end
 
 Bottom()
-local grid
+
 function Middle(fe)
     fe:Show()
     UpdateSus()
@@ -127,9 +126,9 @@ function Middle(fe)
 
     gui.EnableScreenClicker(true)
 end
-
-function GM:ScoreboardShow()
-    
+hook.Add("InitPostEntity", "LoadFSlots", function()
+    net.Start("RequestSlots")
+    net.SendToServer()
     if not frame then
         frame = vgui.Create("DPanel")
         frame:SetSize(530, 418)
@@ -163,7 +162,11 @@ function GM:ScoreboardShow()
                     surface.DrawRect(0, 0, pw, ph)
             end
         end
+        frame:Hide() 
     end
+end)
+
+function GM:ScoreboardShow()
     Middle(frame)
     net.Start("RequestSlots")
     net.SendToServer()
@@ -185,3 +188,4 @@ local function IsValidPanel(d)
     if type(d) == "Panel" then return true end
     return false
 end
+
