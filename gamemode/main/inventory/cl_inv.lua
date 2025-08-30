@@ -48,11 +48,13 @@ local function DoDrop(parentPanel, panels, bDoDrop)
     oldSlotIdx = Slotidx
 end
 
+local MyTime = 0
 function UpdateSus()
+    if CurTime() < MyTime then return end
+    MyTime = CurTime() + 5
     for k, v in pairs(slotData) do
         for i = 1, 30 do
-            if v.NumberOnBoard == i and v.LastSlot ~= i then
-                print(i, v.NumberOnBoard, v.LastSlot)
+            if v.NumberOnBoard == i then
                 -- Create the button
                 btn[i] = vgui.Create("DImageButton")
                 btn[i]:SetImage("materials/items/tools/rock.png")
@@ -84,7 +86,7 @@ end
 local function UpdateBtn()
     for i = 1, 55 do
         if IsValid(but[i]) then
-            //but[i]:Remove()
+            but[i]:Remove()
             //but[i] = nil
         end
     end
@@ -120,16 +122,18 @@ function Middle(fe)
     UpdateSus()
     timer.Create("update", 0.02, 0, function()
         if IsValid(fe) then
-            UpdateBtn()
-            //gui.EnableScreenClicker(true)
+            if fe:IsVisible() then 
+                UpdateBtn()
+                gui.EnableScreenClicker(true) 
+            end
         end
     end)
 
     gui.EnableScreenClicker(true)
 end
 
-hook.Add("InitPostEntity", "LoadFSlots", function()
-        if not frame then
+function GM:ScoreboardShow()
+    if not frame then
             frame = vgui.Create("DPanel")
             frame:SetSize(530, 418)
             frame:SetPos(w * 0.34, h * 0.38)
@@ -162,15 +166,9 @@ hook.Add("InitPostEntity", "LoadFSlots", function()
                         surface.DrawRect(0, 0, pw, ph)
                 end
             end
-            Middle(frame)
-            frame:Hide()
-            gui.EnableScreenClicker(false)
         end
     net.Start("RequestSlots")
     net.SendToServer()
-end)
-
-function GM:ScoreboardShow()
     Middle(frame)
 end
 
