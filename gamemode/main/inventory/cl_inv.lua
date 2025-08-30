@@ -6,16 +6,6 @@ local but = {}
 local DPanel = {}
 local slotData = {}
 local NextSlot = {}
--- Function to clear all buttons
-local function ClearAllButtons()
-    for i = 1, 50 do -- Clear more than needed to be safe
-        if IsValid(but[i]) then
-            but[i]:Remove()
-            but[i] = nil
-        end
-    end
-end
-
 net.Receive("SendSlots", function()
     slotData = net.ReadTable()
     NextSlot = slotData or {}
@@ -34,7 +24,7 @@ local function DoDrop(parentPanel, panels, bDoDrop)
     if not bDoDrop then return end
     local midIndex = table.KeyFromValue(pnl, parentPanel) or 0
     local botIndex = table.KeyFromValue(DPanel, parentPanel) or 0
-    local Slotidx = midIndex > 0 and midIndex or (botIndex > 0 and (botIndex + 30) or 1)
+    local Slotidx = midIndex > 0 and midIndex or (botIndex > 0 and botIndex or 1)
     for _, panel in ipairs(panels) do
         panel:SetParent(parentPanel)
         panel:Dock(FILL)
@@ -44,16 +34,22 @@ local function DoDrop(parentPanel, panels, bDoDrop)
             PanelType = midIndex > 0 and "pnl" or "DPanel",
             LastSlot = oldSlotIdx,
         }
-
-        but[Slotidx] = panel
     end
 
-   
-    for i = 1, #NextSlot do
-        NextSlot[oldSlotIdx] = {}
-        NextSlot[oldSlotIdx] = nil
+    for i = 1, 6 do
+        if IsValid(DPanel[i]) then
+            DPanel[i]:Remove()
+            DPanel[i] = nil
+            Bottom()
+        end
     end
 
+    for i = 1, 30 do
+        if Slotidx ~= i then table.remove(NextSlot, i) end
+    end
+
+    NextSlot[oldSlotIdx] = {}
+    NextSlot[oldSlotIdx] = nil
     oldSlotIdx = Slotidx
     --PrintTable(NextSlot)
     net.Start("SaveSlots")
@@ -102,9 +98,21 @@ end
 
 function GM:ScoreboardShow()
     if not IsValid(frame) then
+        Middle()
         net.Start("RequestSlots")
         net.SendToServer()
-        Middle()
+        for k, v in pairs(slotData) do
+            for i = 1, 30 do
+                if v.NumberOnBoard == i and v.LastSlot ~= i then
+                    but[i] = vgui.Create('DImageButton')
+                    but[i]:SetImage("materials/items/tools/rock.png")
+                    but[i]:Dock(FILL)
+                    but[i]:SetParent(pnl[i])
+                    but[i]:Droppable("myDNDname")
+                end
+            end
+        end
+
         gui.EnableScreenClicker(true)
     end
 end
@@ -115,9 +123,6 @@ function GM:ScoreboardHide()
         frame = nil
         gui.EnableScreenClicker(false)
     end
-
-    -- Clean up bottom panels
-    ClearAllButtons()
 end
 
 local function FixedWidth(ww, ex)

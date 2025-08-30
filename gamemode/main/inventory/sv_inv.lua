@@ -10,9 +10,11 @@ if not file.IsDir(slotDir, "DATA") then file.CreateDir(slotDir) end
 local function SavePlayerSlots(ply, data)
     local sid = ply:SteamID64()
     if not sid then return end
-    for k, v in pairs(data) do
-        if v.LastSlot == nil then v.LastSlot = 1 end
-        data[v.LastSlot] = nil
+    for i = 1, 30 do
+        if data[i] and data[i].LastSlot == data[i].NumberOnBoard then
+            table.remove(data, i)
+            print("Removing", i)
+        end
     end
 
     file.Write(slotDir .. "/" .. sid .. ".txt", util.TableToJSON(data, true))
@@ -100,17 +102,13 @@ end)
 local playersInitialized = {}
 hook.Add("PlayerSpawn", "SendSlotsOnSpawn", function(ply)
     if not IsValid(ply) then return end
-    local steamID = ply:SteamID64()
-    if not playersInitialized[steamID] then
-        playersInitialized[steamID] = true
-        ply:AddItem()
-    else
-        -- Just send existing data without adding new items
-        local data = LoadPlayerSlots(ply)
-        net.Start("SendSlots")
-        net.WriteTable(data)
-        net.Send(ply)
-    end
+    ply:AddItem()
+end)
+
+hook.Add("PlayerDeath", "DEathFDelte", function(ply)
+    local data = LoadPlayerSlots(ply)
+    table.Empty(data)
+    SavePlayerSlots(ply, data)
 end)
 
 -- Clean up tracking when player disconnects
