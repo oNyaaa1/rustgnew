@@ -6,6 +6,7 @@ local but = {}
 local DPanel = {}
 local slotData = {}
 local NextSlot = {}
+local btn = {}
 net.Receive("SendSlots", function()
     slotData = net.ReadTable()
     NextSlot = slotData or {}
@@ -36,11 +37,10 @@ local function DoDrop(parentPanel, panels, bDoDrop)
         }
     end
 
-    for i = 1, 6 do
-        if IsValid(DPanel[i]) then
-            DPanel[i]:Remove()
-            DPanel[i] = nil
-            Bottom()
+    for i = 1, 55 do
+        if IsValid(but[i]) then
+            but[i]:Remove()
+            but[i] = nil
         end
     end
 
@@ -51,26 +51,54 @@ local function DoDrop(parentPanel, panels, bDoDrop)
     NextSlot[oldSlotIdx] = {}
     NextSlot[oldSlotIdx] = nil
     oldSlotIdx = Slotidx
-    --PrintTable(NextSlot)
-    net.Start("SaveSlots")
-    net.WriteTable(NextSlot)
-    net.SendToServer()
 end
 
-function Middle(data)
-    if frame then return end
-    frame = vgui.Create("DPanel")
-    frame:SetSize(530, 418)
-    frame:SetPos(w * 0.34, h * 0.38)
-    frame.Paint = function(me, fw, fh)
-        surface.SetMaterial(Material("materials/ui/background.png"))
-        surface.SetDrawColor(0, 0, 0, 255)
-        surface.DrawTexturedRect(0, 0, fw, fh)
-        surface.SetDrawColor(94, 94, 94, 150)
-        surface.DrawRect(0, 0, fw, fh)
+function UpdateSus()
+    for k, v in pairs(slotData) do
+        for i = 1, 30 do
+            if v.NumberOnBoard == i and v.LastSlot ~= i then
+                print(i, v.NumberOnBoard, v.LastSlot)
+                -- Create the button
+                btn[i] = vgui.Create("DImageButton")
+                btn[i]:SetImage("materials/items/tools/rock.png")
+                btn[i]:Dock(FILL)
+                btn[i]:Droppable("myDNDname")
+                -- Parent to the correct slot type
+                if v.PanelType == "pnl" and IsValid(pnl[v.NumberOnBoard]) then
+                    btn[i]:SetParent(pnl[v.NumberOnBoard])
+                    -- clear the matching DPanel slot at this index
+                    if IsValid(DPanel[v.NumberOnBoard]) then DPanel[v.NumberOnBoard]:Remove() end
+                elseif v.PanelType == "DPanel" and IsValid(DPanel[v.NumberOnBoard]) then
+                    btn[i]:SetParent(DPanel[v.NumberOnBoard])
+                    -- clear the matching pnl slot at this index
+                    if IsValid(pnl[v.NumberOnBoard]) then pnl[v.NumberOnBoard]:Remove() end
+                else
+                    print("[DoDrop] Invalid parent for slot", v.NumberOnBoard, "type:", v.PanelType)
+                    btn[i]:Remove() -- prevent floating orphan panels
+                    continue
+                end
+            end
+        end
     end
 
-    local grid = vgui.Create("ThreeGrid", frame)
+    net.Start("SaveSlots")
+    net.WriteTable(slotData)
+    net.SendToServer()
+    gui.EnableScreenClicker(true)
+end
+
+local function UpdateBtn()
+    for i = 1, 55 do
+        if IsValid(but[i]) then
+            but[i]:Remove()
+            but[i] = nil
+        end
+    end
+end
+
+local grid
+function Middle(fr)
+    grid = vgui.Create("ThreeGrid", fr)
     grid:Dock(FILL)
     grid:DockMargin(4, 4, 4, 4)
     grid:InvalidateParent(true)
@@ -93,26 +121,32 @@ function Middle(data)
             end
         end
     end
-    -- Don't populate here - wait for network data
+
+    UpdateSus()
+    timer.Create("update", 0.02, 0, function()
+        if IsValid(fr) then
+            UpdateBtn()
+            gui.EnableScreenClicker(true)
+        end
+    end)
 end
 
 function GM:ScoreboardShow()
     if not IsValid(frame) then
-        Middle()
-        net.Start("RequestSlots")
-        net.SendToServer()
-        for k, v in pairs(slotData) do
-            for i = 1, 30 do
-                if v.NumberOnBoard == i and v.LastSlot ~= i then
-                    but[i] = vgui.Create('DImageButton')
-                    but[i]:SetImage("materials/items/tools/rock.png")
-                    but[i]:Dock(FILL)
-                    but[i]:SetParent(pnl[i])
-                    but[i]:Droppable("myDNDname")
-                end
-            end
+        frame = vgui.Create("DPanel")
+        frame:SetSize(530, 418)
+        frame:SetPos(w * 0.34, h * 0.38)
+        frame.Paint = function(me, fw, fh)
+            surface.SetMaterial(Material("materials/ui/background.png"))
+            surface.SetDrawColor(0, 0, 0, 255)
+            surface.DrawTexturedRect(0, 0, fw, fh)
+            surface.SetDrawColor(94, 94, 94, 150)
+            surface.DrawRect(0, 0, fw, fh)
         end
 
+        Middle(frame)
+        net.Start("RequestSlots")
+        net.SendToServer()
         gui.EnableScreenClicker(true)
     end
 end
@@ -139,13 +173,9 @@ function Bottom()
     local h = ScrH()
     local w = ScrW()
     -- clear old NumberOnBoard
-    for i = 1, #DPanel do
-        if IsValid(DPanel[i]) then DPanel[i]:Remove() end
-    end
-
-    DPanel = {}
     -- create 6 NumberOnBoard
     for i = 1, 6 do
+        if IsValid(DPanel[i]) then continue end
         DPanel[i] = vgui.Create("DPanel")
         DPanel[i]:SetSize(80, 80)
         DPanel[i]:SetPos(w * 0.35 + ((i - 1) * 85), h * 0.85) -- spaced horizontally

@@ -11,8 +11,8 @@ local function SavePlayerSlots(ply, data)
     local sid = ply:SteamID64()
     if not sid then return end
     for i = 1, 30 do
-        if data[i] and data[i].LastSlot == data[i].NumberOnBoard then
-            table.remove(data, i)
+        if data[i] and data[i].LastSlot == i then
+            --table.remove(data, i)
             print("Removing", i)
         end
     end
