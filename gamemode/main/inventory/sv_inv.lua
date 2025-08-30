@@ -104,6 +104,9 @@ hook.Add("PlayerDeath", "DEathFDelte", function(ply)
     local data = LoadPlayerSlots(ply)
     table.Empty(data)
     SavePlayerSlots(ply, data)
+    net.Start("SendSlots")
+    net.WriteTable(data)
+    net.Send(ply)
 end)
 
 -- Clean up tracking when player disconnects

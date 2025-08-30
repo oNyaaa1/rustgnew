@@ -59,7 +59,6 @@ function UpdateSus()
     for k, v in pairs(slotData) do
         for i = 1, 30 do
             if v.NumberOnBoard == i and v.LastSlot ~= i then
-                print(i, v.NumberOnBoard, v.LastSlot)
                 -- Create the button
                 btn[i] = vgui.Create("DImageButton")
                 btn[i]:SetImage("materials/items/tools/rock.png")
@@ -71,14 +70,13 @@ function UpdateSus()
                     net.SendToServer()
                 end
 
-                print(v.Bar)
                 -- Parent to the correct slot type
                 if v.PanelType == "pnl" and IsValid(pnl[v.NumberOnBoard]) then
                     btn[i]:SetParent(pnl[v.NumberOnBoard])
                     -- clear the matching DPanel slot at this index
                     if IsValid(DPanel[v.NumberOnBoard]) then DPanel[v.NumberOnBoard]:Remove() end
                 end
-
+ 
                 if v.PanelType == "DPanel" and IsValid(DPanel[v.NumberOnBoard]) then
                     btn[i]:SetParent(DPanel[v.NumberOnBoard])
                     -- clear the matching pnl slot at this index
