@@ -96,8 +96,9 @@ end)
 -- Track if player has already been given starter items this session
 local playersInitialized = {}
 hook.Add("PlayerSpawn", "SendSlotsOnSpawn", function(ply)
-    if not IsValid(ply) then return end
-    ply:AddItem("tfa_rustalpha_rocktool", "rock")
+    if IsValid(ply) then
+        ply:AddItem("tfa_rustalpha_rocktool", "rock")
+    end
 end)
 
 hook.Add("PlayerDeath", "DEathFDelte", function(ply)

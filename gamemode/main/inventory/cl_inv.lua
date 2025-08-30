@@ -115,6 +115,7 @@ end
 Bottom()
 
 function Middle(fe)
+    if not fe then return end
     fe:Show()
     UpdateSus()
     timer.Create("update", 0.02, 0, function()
@@ -126,50 +127,51 @@ function Middle(fe)
 
     gui.EnableScreenClicker(true)
 end
+
 hook.Add("InitPostEntity", "LoadFSlots", function()
+        if not frame then
+            frame = vgui.Create("DPanel")
+            frame:SetSize(530, 418)
+            frame:SetPos(w * 0.34, h * 0.38)
+            frame.Paint = function(me, fw, fh)
+                surface.SetMaterial(Material("materials/ui/background.png"))
+                surface.SetDrawColor(0, 0, 0, 255)
+                surface.DrawTexturedRect(0, 0, fw, fh)
+                surface.SetDrawColor(94, 94, 94, 150)
+                surface.DrawRect(0, 0, fw, fh)
+            end
+
+            local grid = vgui.Create("ThreeGrid", frame)
+            grid:Dock(FILL)
+            grid:DockMargin(4, 4, 4, 4)
+            grid:InvalidateParent(true)
+            grid:SetColumns(6)
+            grid:SetHorizontalMargin(2)
+            grid:SetVerticalMargin(2)
+            -- Create empty slots only
+            for i = 1, 30 do
+                    pnl[i] = vgui.Create("DPanel")
+                    pnl[i]:SetTall(80)
+                    pnl[i]:Receiver("myDNDname", DoDrop)
+                    grid:AddCell(pnl[i])
+                    pnl[i].Paint = function(me, pw, ph)
+                        surface.SetMaterial(Material("materials/ui/background.png"))
+                        surface.SetDrawColor(0, 0, 0, 100)
+                        surface.DrawTexturedRect(0, 0, pw, ph)
+                        surface.SetDrawColor(94, 94, 94, 150)
+                        surface.DrawRect(0, 0, pw, ph)
+                end
+            end
+            Middle(frame)
+            frame:Hide()
+            gui.EnableScreenClicker(false)
+        end
     net.Start("RequestSlots")
     net.SendToServer()
-    if not frame then
-        frame = vgui.Create("DPanel")
-        frame:SetSize(530, 418)
-        frame:SetPos(w * 0.34, h * 0.38)
-        frame.Paint = function(me, fw, fh)
-            surface.SetMaterial(Material("materials/ui/background.png"))
-            surface.SetDrawColor(0, 0, 0, 255)
-            surface.DrawTexturedRect(0, 0, fw, fh)
-            surface.SetDrawColor(94, 94, 94, 150)
-            surface.DrawRect(0, 0, fw, fh)
-        end
-
-        local grid = vgui.Create("ThreeGrid", frame)
-        grid:Dock(FILL)
-        grid:DockMargin(4, 4, 4, 4)
-        grid:InvalidateParent(true)
-        grid:SetColumns(6)
-        grid:SetHorizontalMargin(2)
-        grid:SetVerticalMargin(2)
-        -- Create empty slots only
-        for i = 1, 30 do
-                pnl[i] = vgui.Create("DPanel")
-                pnl[i]:SetTall(80)
-                pnl[i]:Receiver("myDNDname", DoDrop)
-                grid:AddCell(pnl[i])
-                pnl[i].Paint = function(me, pw, ph)
-                    surface.SetMaterial(Material("materials/ui/background.png"))
-                    surface.SetDrawColor(0, 0, 0, 100)
-                    surface.DrawTexturedRect(0, 0, pw, ph)
-                    surface.SetDrawColor(94, 94, 94, 150)
-                    surface.DrawRect(0, 0, pw, ph)
-            end
-        end
-        frame:Hide() 
-    end
 end)
 
 function GM:ScoreboardShow()
     Middle(frame)
-    net.Start("RequestSlots")
-    net.SendToServer()
 end
 
 function GM:ScoreboardHide()
