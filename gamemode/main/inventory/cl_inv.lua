@@ -8,23 +8,11 @@ local pnl = {}
 local but = {}
 local DPanel = {}
 local slotData = {}
-local temp_Tbl = {}
 local NextSlot = {}
-net.Receive("SendSlots", function()
-    slotData = net.ReadTable() or {}
-    for k, v in pairs(slotData) do
-        slotData[v.NumberOnBoard] = {
-            NumberOnBoard = v.NumberOnBoard,
-            model = v.model,
-            PanelType = v.PanelType,
-        }
-    end
-end)
-
+net.Receive("SendSlots", function() slotData = net.ReadTable() end)
 -- example DoDrop, same one you use in Middle()
 local function DoDrop(parentPanel, panels, bDoDrop)
     if not bDoDrop then return end
-    temp_Tbl = temp_Tbl or {}
     for _, panel in ipairs(panels) do
         -- find which slot we dropped into
         local midIndex = table.KeyFromValue(pnl, parentPanel) or 0
@@ -39,7 +27,19 @@ local function DoDrop(parentPanel, panels, bDoDrop)
                     PanelType = midIndex > 0 and "pnl" or "DPanel",
                 }
 
-                if IsValid(but[Slotidx]) then but[Slotidx]:SetParent(Slotidx) end
+                if IsValid(but[i]) and but[i] ~= panel then
+                    but[i]:Remove()
+                    but[i] = nil
+                end
+
+                -- but[Slotidx] = vgui.Create('DImageButton')
+                if IsValid(pnl[i]) then
+                    but[i] = vgui.Create('DImageButton')
+                    but[i]:SetImage("materials/items/tools/rock.png")
+                    but[i]:Dock(FILL)
+                    but[i]:SetParent(parentPanel)
+                    but[i]:Droppable("myDNDname")
+                end
             end
 
             -- reparent the panel so it visually sticks
@@ -49,7 +49,7 @@ local function DoDrop(parentPanel, panels, bDoDrop)
     end
 
     net.Start("SaveSlots")
-    net.WriteTable(temp_Tbl)
+    net.WriteTable(slotData)
     net.SendToServer()
 end
 
@@ -62,9 +62,6 @@ function table.KeyFromValue(tab, val)
 end
 
 function Middle(data)
-    net.Start("RequestSlots")
-    net.SendToServer()
-    if not slotData then return end
     if frame then return end
     frame = vgui.Create("DPanel")
     frame:SetSize(530, 418)
@@ -101,14 +98,33 @@ function Middle(data)
         end
     end
 
-    for k, v in pairs(slotData) do
-        if v.Slots == nil then v.Slots = 1 end
-        but[v.Slots] = vgui.Create('DImageButton')
-        but[v.Slots]:SetImage(v.model)
-        but[v.Slots]:Dock(FILL)
-        but[v.Slots]:SetParent(pnl[v.NumberOnBoard])
-        but[v.Slots]:Droppable("myDNDname")
+    for i = 1, #slotData do
+        for k, v in pairs(slotData) do
+            if IsValid(but[i]) and but[i] ~= pnl[i] then
+                but[i]:Remove()
+                but[i] = nil
+            end
+
+            if v.NumberOnBoard == nil then v.NumberOnBoard = 1 end
+            if IsValid(pnl[v.NumberOnBoard]) and but[i] ~= pnl[i] then
+                slotData[v.NumberOnBoard] = {
+                    NumberOnBoard = v.NumberOnBoard,
+                    model = v.model,
+                    PanelType = v.PanelType,
+                }
+
+                but[v.NumberOnBoard] = vgui.Create('DImageButton')
+                but[v.NumberOnBoard]:SetImage(v.model)
+                but[v.NumberOnBoard]:Dock(FILL)
+                but[v.NumberOnBoard]:SetParent(pnl[v.NumberOnBoard])
+                but[v.NumberOnBoard]:Droppable("myDNDname")
+            end
+        end
     end
+
+    net.Start("SaveSlots")
+    net.WriteTable(slotData)
+    net.SendToServer()
 end
 
 function GM:ScoreboardShow()
@@ -139,13 +155,13 @@ end
 function Bottom()
     local h = ScrH()
     local w = ScrW()
-    -- clear old slots
+    -- clear old NumberOnBoard
     for i = 1, #DPanel do
         if IsValid(DPanel[i]) then DPanel[i]:Remove() end
     end
 
     DPanel = {}
-    -- create 6 slots
+    -- create 6 NumberOnBoard
     for i = 1, 6 do
         DPanel[i] = vgui.Create("DPanel")
         DPanel[i]:SetSize(80, 80)

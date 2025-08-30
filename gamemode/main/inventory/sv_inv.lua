@@ -39,7 +39,7 @@ end)
 local Inventory = FindMetaTable("Player")
 function Inventory:AddItem(wep, slot)
     local data = LoadPlayerSlots(self) or {}
-    -- Add a rock to the first slot if empty
+    -- Add a rock to the first slot if emptyf
     data[1] = {
         NumberOnBoard = 1,
         model = "materials/items/tools/rock.png",
