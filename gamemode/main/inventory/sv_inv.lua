@@ -10,13 +10,6 @@ if not file.IsDir(slotDir, "DATA") then file.CreateDir(slotDir) end
 local function SavePlayerSlots(ply, data)
     local sid = ply:SteamID64()
     if not sid then return end
-    for i = 1, 30 do
-        if data[i] and data[i].LastSlot == i then
-            --table.remove(data, i)
-            print("Removing", i)
-        end
-    end
-
     file.Write(slotDir .. "/" .. sid .. ".txt", util.TableToJSON(data, true))
 end
 
@@ -44,7 +37,7 @@ net.Receive("RequestSlots", function(len, ply)
 end)
 
 local Inventory = FindMetaTable("Player")
-function Inventory:AddItem(wep, slot)
+function Inventory:AddItem(wep, names)
     local data = LoadPlayerSlots(self) or {}
     -- Check if player already has items to prevent duplicates
     local hasItems = false
@@ -78,10 +71,13 @@ function Inventory:AddItem(wep, slot)
         table.insert(data, {
             NumberOnBoard = emptySlot,
             model = "materials/items/tools/rock.png",
-            PanelType = emptySlot <= 30 and "pnl" or "DPanel",
+            PanelType = emptySlot <= 30 and "DPanel" or "pnl",
+            Type = wep,
+            Name = names,
+            Bar = "active",
         })
 
-        self:Give("tfa_rustalpha_rocktool")
+        self:Give(wep)
         -- Save to file
         SavePlayerSlots(self, data)
     end
@@ -94,14 +90,14 @@ end
 
 net.Receive("DropASlot", function(len, ply)
     local tbl = net.ReadString()
-    //ply:DropWeapon(ply:GetWeapon(tbl))
+    --ply:DropWeapon(ply:GetWeapon(tbl))
 end)
 
 -- Track if player has already been given starter items this session
 local playersInitialized = {}
 hook.Add("PlayerSpawn", "SendSlotsOnSpawn", function(ply)
     if not IsValid(ply) then return end
-    ply:AddItem()
+    ply:AddItem("tfa_rustalpha_rocktool", "rock")
 end)
 
 hook.Add("PlayerDeath", "DEathFDelte", function(ply)

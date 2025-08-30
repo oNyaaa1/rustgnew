@@ -10,4 +10,4 @@ function GM:PostDrawViewModel( vm, ply, weapon )
 
 	end
 
-end
+end//test
