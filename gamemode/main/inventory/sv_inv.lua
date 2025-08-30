@@ -35,6 +35,21 @@ net.Receive("RequestSlots", function(len, ply)
     net.Send(ply)
 end)
 
+local Inventory = FindMetaTable("Player")
+function Inventory:AddItem(wep, slot)
+    local slotData = {}
+    slotData[1] = {
+        NumberOnBoard = 1,
+        Model = "materials/items/tools/rock.png",
+        PanelType = "pnl",
+    }
+
+    --self:Give("weapon_rock")
+    net.Start("SendSlots")
+    net.WriteTable(slotData)
+    net.Send(self)
+end
+
 -- Send slots on spawn
 hook.Add("PlayerSpawn", "SendSlotsOnSpawn", function(ply)
     if not IsValid(ply) then return end
@@ -42,21 +57,8 @@ hook.Add("PlayerSpawn", "SendSlotsOnSpawn", function(ply)
     net.Start("SendSlots")
     net.WriteTable(data) -- Consider net.WriteString(util.TableToJSON(data))
     net.Send(ply)
-    ply:Give("weapon_rock")
-    ply:SelectWeapon(ply:GetActiveWeapon())
+    ply:AddItem()
+    --ply:Give("weapon_rock")
+    --ply:SelectWeapon(ply:GetActiveWeapon())
 end)
-
 -- Player inventory meta
-local Inventory = FindMetaTable("Player")
-function Inventory:AddItem(wep, slot)
-    self.temp_Tbl = {
-        Slots = 1,
-        NumberOnBoard = 1,
-        img = "models/weapons/yurie_rustalpha/wm-rock.mdl",
-    }
-
-    self:Give("weapon_rock")
-    net.Start("SendSlots")
-    net.WriteTable(self.temp_Tbl)
-    net.Send(ply)
-end
