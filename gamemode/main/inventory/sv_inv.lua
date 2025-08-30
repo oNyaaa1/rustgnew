@@ -2,6 +2,7 @@
 util.AddNetworkString("SaveSlots")
 util.AddNetworkString("RequestSlots")
 util.AddNetworkString("SendSlots")
+util.AddNetworkString("DropASlot")
 -- Directory for slot data
 local slotDir = "slots"
 if not file.IsDir(slotDir, "DATA") then file.CreateDir(slotDir) end
@@ -44,11 +45,16 @@ function Inventory:AddItem(wep, slot)
         PanelType = "pnl",
     }
 
-    --self:Give("weapon_rock")
+    self:Give("weapon_rock")
     net.Start("SendSlots")
     net.WriteTable(slotData)
     net.Send(self)
 end
+
+net.Receive("DropASlot", function(len,ply)
+    local tbl = net.ReadTable()
+    //ply:DropWeapon(ply:GetWeapon(tbl))
+end)
 
 -- Send slots on spawn
 hook.Add("PlayerSpawn", "SendSlotsOnSpawn", function(ply)

@@ -17,7 +17,14 @@ end)
 
 -- example DoDrop, same one you use in Middle()
 local function DoDrop(parentPanel, panels, bDoDrop)
-    if not bDoDrop then return end
+    if not bDoDrop then
+        print(midIndex)
+        net.Start("DropASlot")
+        net.WriteTable(temp_Tbl)
+        net.SendToServer()
+        return
+    end
+
     temp_Tbl = temp_Tbl or {}
     for _, panel in ipairs(panels) do
         -- find which slot we dropped into
