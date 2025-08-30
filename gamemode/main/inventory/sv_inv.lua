@@ -81,7 +81,7 @@ function Inventory:AddItem(wep, slot)
             PanelType = emptySlot <= 30 and "pnl" or "DPanel",
         })
 
-        self:Give("rust_rock")
+        self:Give("tfa_rustalpha_rocktool")
         -- Save to file
         SavePlayerSlots(self, data)
     end
@@ -94,8 +94,7 @@ end
 
 net.Receive("DropASlot", function(len, ply)
     local tbl = net.ReadString()
-    print(tbl)
-    ply:DropWeapon(ply:GetWeapon(tbl))
+    //ply:DropWeapon(ply:GetWeapon(tbl))
 end)
 
 -- Track if player has already been given starter items this session
