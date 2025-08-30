@@ -1,3 +1,4 @@
+AddCSLuaFile()
 SWEP.Base = "rust_melee"
 
 SWEP.Category = "Rust Rock"

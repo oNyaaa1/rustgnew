@@ -2,13 +2,9 @@
 util.AddNetworkString("SaveSlots")
 util.AddNetworkString("RequestSlots")
 util.AddNetworkString("SendSlots")
-
 -- Directory for slot data
 local slotDir = "slots"
-if not file.IsDir(slotDir, "DATA") then
-    file.CreateDir(slotDir)
-end
-
+if not file.IsDir(slotDir, "DATA") then file.CreateDir(slotDir) end
 -- Save player slots to file
 local function SavePlayerSlots(ply, data)
     local sid = ply:SteamID64()
@@ -21,9 +17,7 @@ local function LoadPlayerSlots(ply)
     local sid = ply:SteamID64()
     if not sid then return {} end
     local path = slotDir .. "/" .. sid .. ".txt"
-    if file.Exists(path, "DATA") then
-        return util.JSONToTable(file.Read(path, "DATA")) or {}
-    end
+    if file.Exists(path, "DATA") then return util.JSONToTable(file.Read(path, "DATA")) or {} end
     return {}
 end
 
@@ -49,14 +43,20 @@ hook.Add("PlayerSpawn", "SendSlotsOnSpawn", function(ply)
     net.WriteTable(data) -- Consider net.WriteString(util.TableToJSON(data))
     net.Send(ply)
     ply:Give("weapon_rock")
+    ply:SelectWeapon(ply:GetActiveWeapon())
 end)
 
 -- Player inventory meta
 local Inventory = FindMetaTable("Player")
+function Inventory:AddItem(wep, slot)
+    self.temp_Tbl = {
+        Slots = 1,
+        NumberOnBoard = 1,
+        img = "models/weapons/yurie_rustalpha/wm-rock.mdl",
+    }
 
-function Inventory:AddItem(wep,slot)
     self:Give("weapon_rock")
     net.Start("SendSlots")
-    net.WriteTable(data)
+    net.WriteTable(self.temp_Tbl)
     net.Send(ply)
 end
