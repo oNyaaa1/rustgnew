@@ -10,7 +10,17 @@ local DPanel = {}
 local slotData = {}
 local temp_Tbl = {}
 local NextSlot = {}
-net.Receive("SendSlots", function() slotData = net.ReadTable() or {} end)
+net.Receive("SendSlots", function()
+    slotData = net.ReadTable() or {}
+    for k, v in pairs(slotData) do
+        slotData[v.NumberOnBoard] = {
+            NumberOnBoard = v.NumberOnBoard,
+            model = v.model,
+            PanelType = v.PanelType,
+        }
+    end
+end)
+
 -- example DoDrop, same one you use in Middle()
 local function DoDrop(parentPanel, panels, bDoDrop)
     if not bDoDrop then return end
