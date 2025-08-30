@@ -82,7 +82,7 @@ function UpdateSus()
     end
     gui.EnableScreenClicker(true)
 end
-
+timer.Simple(5, function() UpdateSus() end)
 local function UpdateBtn()
     for i = 1, 55 do
         if IsValid(but[i]) then
