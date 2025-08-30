@@ -1,10 +1,10 @@
-SWEP.Base = "tfa_rustalpha_meleebase"
+SWEP.Base = "rust_melee"
 
-SWEP.Category = "TFA Rust Legacy"
-SWEP.Spawnable = (TFA_BASE_VERSION and TFA_BASE_VERSION >= 4.5) and (TFA and TFA.RUSTALPHA ~= nil)
+SWEP.Category = "Rust Rock"
+SWEP.Spawnable = true
 SWEP.AdminOnly = false
 
-SWEP.Author = "YuRaNnNzZZ"
+SWEP.Author = "Thefreecode"
 SWEP.PrintName = "Rock"
 SWEP.ViewModel = "models/weapons/yurie_rustalpha/c-vm-rock.mdl"
 SWEP.WorldModel = "models/weapons/yurie_rustalpha/wm-rock.mdl"

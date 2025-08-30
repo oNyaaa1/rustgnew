@@ -48,11 +48,15 @@ hook.Add("PlayerSpawn", "SendSlotsOnSpawn", function(ply)
     net.Start("SendSlots")
     net.WriteTable(data) -- Consider net.WriteString(util.TableToJSON(data))
     net.Send(ply)
+    ply:Give("weapon_rock")
 end)
 
 -- Player inventory meta
 local Inventory = FindMetaTable("Player")
 
-function Inventory:AddProgression()
-    -- TODO: Implement progression logic
+function Inventory:AddItem(wep,slot)
+    self:Give("weapon_rock")
+    net.Start("SendSlots")
+    net.WriteTable(data)
+    net.Send(ply)
 end

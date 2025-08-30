@@ -24,3 +24,7 @@ function GM:PlayerSpawn(pl)
     pl:SetThirst(math.random(60, 70))
     pl:SetModel("models/player/Group01/Male_01.mdl")
 end
+
+hook.Add("InitPostEntity", "WipeStart", function()
+    if game.GetMap() ~= "rust_highland_v1_3a" then game.ConsoleCommand("changelevel rust_highland_v1_3a\n") end
+end)
