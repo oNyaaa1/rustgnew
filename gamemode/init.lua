@@ -23,7 +23,7 @@ function GM:PlayerSpawn(pl)
     pl:SetHunger(math.random(30, 50))
     pl:SetThirst(math.random(60, 70))
     pl:SetModel("models/player/Group01/Male_01.mdl")
-    ply:SetupHands()
+    pl:SetupHands()
 end
 
 -- Choose the model for hands according to their player model.
