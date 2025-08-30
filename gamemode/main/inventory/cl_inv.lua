@@ -103,19 +103,17 @@ function Middle()
             but[v.Slots] = vgui.Create('DImageButton')
             but[v.Slots]:SetModel(v.model)
             but[v.Slots]:Dock(FILL)
-            local PrevMins, PrevMaxs = but[v.Slots].Entity:GetRenderBounds()
             but[v.Slots]:SetCamPos(PrevMins:Distance(PrevMaxs) * Vector(0.5, 0.5, 0.5))
             but[v.Slots]:SetLookAt((PrevMaxs + PrevMins) / 2)
             but[v.Slots]:SetParent(pnl[v.NumberOnBoard])
             but[v.Slots]:Droppable("myDNDname")
         end
 
-        if not IsValid(but[v.Slots]) then
+        if not IsValid(but[v.Slots]) and IsValid(pnl[v.NumberOnBoard]) then
             if type(v.model) ~= "string" then continue end
             but[v.Slots] = vgui.Create('DImageButton')
             but[v.Slots]:SetModel(v.model)
             but[v.Slots]:Dock(FILL)
-            local PrevMins, PrevMaxs = but[v.Slots].Entity:GetRenderBounds()
             but[v.Slots]:SetCamPos(PrevMins:Distance(PrevMaxs) * Vector(0.5, 0.5, 0.5))
             but[v.Slots]:SetLookAt((PrevMaxs + PrevMins) / 2)
             but[v.Slots]:SetParent(pnl[v.NumberOnBoard])
@@ -127,7 +125,7 @@ function Middle()
         if type(v.Model) ~= "string" then continue end
         if not v.Model or v.Model == "" then continue end
         if v.PanelType == "pnl" then
-            if not IsValid(but[v.NumberOnBoard]) then
+            if not IsValid(but[v.NumberOnBoard]) and IsValid(pnl[v.NumberOnBoard]) then
                 but[v.NumberOnBoard] = vgui.Create('DImageButton')
                 but[v.NumberOnBoard]:SetImage(v.Model)
                 but[v.NumberOnBoard]:Dock(FILL)
@@ -135,7 +133,7 @@ function Middle()
                 but[v.NumberOnBoard]:Droppable("myDNDname")
             end
         elseif v.PanelType == "DPanel" then
-            if not IsValid(DPanel[v.NumberOnBoard]) then
+            if not IsValid(DPanel[v.NumberOnBoard]) and IsValid(pnl[v.NumberOnBoard]) then
                 DPanel[v.NumberOnBoard] = vgui.Create('DImageButton')
                 DPanel[v.NumberOnBoard]:SetImage(v.Model)
                 DPanel[v.NumberOnBoard]:Dock(FILL)
