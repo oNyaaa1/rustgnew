@@ -93,9 +93,9 @@ function Inventory:AddItem(wep, slot)
 end
 
 net.Receive("DropASlot", function(len, ply)
-    local tbl = net.ReadTable()
-    PrintTable(tbl)
-    --ply:DropWeapon(ply:GetWeapon(tbl))
+    local tbl = net.ReadString()
+    print(tbl)
+    ply:DropWeapon(ply:GetWeapon(tbl))
 end)
 
 -- Track if player has already been given starter items this session

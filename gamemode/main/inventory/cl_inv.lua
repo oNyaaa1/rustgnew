@@ -21,11 +21,13 @@ function table.KeyFromValue(tab, val)
 end
 
 local oldSlotIdx = 0
+local CurrIndex = 1
 local function DoDrop(parentPanel, panels, bDoDrop)
     if not bDoDrop then return end
     local midIndex = table.KeyFromValue(pnl, parentPanel) or 0
     local botIndex = table.KeyFromValue(DPanel, parentPanel) or 0
     local Slotidx = midIndex > 0 and midIndex or (botIndex > 0 and botIndex or 1)
+    CurrIndex = Slotidx
     for _, panel in ipairs(panels) do
         panel:SetParent(parentPanel)
         panel:Dock(FILL)
@@ -34,6 +36,7 @@ local function DoDrop(parentPanel, panels, bDoDrop)
             model = "materials/items/tools/rock.png",
             PanelType = midIndex > 0 and "pnl" or "DPanel",
             LastSlot = oldSlotIdx,
+            Type = "weapon_rock",
         }
     end
 
@@ -63,6 +66,12 @@ function UpdateSus()
                 btn[i]:SetImage("materials/items/tools/rock.png")
                 btn[i]:Dock(FILL)
                 btn[i]:Droppable("myDNDname")
+                btn[i].DoClick = function()
+                    net.Start("DropASlot")
+                    net.WriteString("weapon_rock")
+                    net.SendToServer()
+                end
+
                 -- Parent to the correct slot type
                 if v.PanelType == "pnl" and IsValid(pnl[v.NumberOnBoard]) then
                     btn[i]:SetParent(pnl[v.NumberOnBoard])
