@@ -12,7 +12,8 @@ local temp_Tbl = {}
 local NextSlot = {}
 net.Receive("SendSlots", function()
     slotData = net.ReadTable()
-    PrintTable(slotData)
+    net.Start("RequestSlots")
+    net.SendToServer()
 end)
 
 -- example DoDrop, same one you use in Middle()
@@ -47,7 +48,6 @@ local function DoDrop(parentPanel, panels, bDoDrop)
         end
     end
 
-    PrintTable(temp_Tbl)
     net.Start("SaveSlots")
     net.WriteTable(temp_Tbl)
     net.SendToServer()
@@ -63,8 +63,6 @@ end
 
 function Middle()
     if frame then return end
-    net.Start("RequestSlots")
-    net.SendToServer()
     frame = vgui.Create("DPanel")
     frame:SetSize(530, 418)
     frame:SetPos(w * 0.34, h * 0.38)
@@ -101,63 +99,13 @@ function Middle()
     end
 
     for k, v in pairs(slotData) do
-        if not IsValid(but[1]) then
-            print("Panel 0")
-            but[1] = vgui.Create('DImageButton')
-            but[1]:SetModel(v.model)
-            but[1]:Dock(FILL)
-            but[1]:SetParent(pnl[1])
-            but[1]:Droppable("myDNDname")
-        end
-
-        if type(v) ~= "table" then continue end
-        if IsValid(but[v.Slots]) then
-            print("Panel 1")
-            but[v.Slots] = vgui.Create('DImageButton')
-            but[v.Slots]:SetModel(v.model)
-            but[v.Slots]:Dock(FILL)
-            but[v.Slots]:SetParent(pnl[v.NumberOnBoard])
-            but[v.Slots]:Droppable("myDNDname")
-        end
-
-        if IsValid(pnl[v.NumberOnBoard]) then
-            print("Panel 2")
-            if type(v.model) ~= "string" then continue end
-            but[v.Slots] = vgui.Create('DImageButton')
-            but[v.Slots]:SetModel(v.model)
-            but[v.Slots]:Dock(FILL)
-            but[v.Slots]:SetParent(pnl[v.NumberOnBoard])
-            but[v.Slots]:Droppable("myDNDname")
-        end
-    end
-
-    for k, v in pairs(slotData) do
-        if type(v) ~= "table" then continue end
-        if not v.model or v.model == "" then continue end
-        local parentPanel = pnl[v.NumberOnBoard]
-        if not IsValid(parentPanel) then continue end
-        if v.PanelType == "pnl" then
-            if not IsValid(but[v.NumberOnBoard]) then
-                but[v.NumberOnBoard] = vgui.Create("DImageButton")
-                but[v.NumberOnBoard]:SetParent(parentPanel)
-                but[v.NumberOnBoard]:Dock(FILL)
-                but[v.NumberOnBoard]:SetImage(v.model)
-                but[v.NumberOnBoard]:Droppable("myDNDname")
-            end
-        elseif v.PanelType == "DPanel" then
-            if not IsValid(DPanel[v.NumberOnBoard]) then
-                DPanel[v.NumberOnBoard] = vgui.Create("DImageButton")
-                DPanel[v.NumberOnBoard]:SetParent(parentPanel)
-                DPanel[v.NumberOnBoard]:Dock(FILL)
-                DPanel[v.NumberOnBoard]:SetImage(v.model)
-                DPanel[v.NumberOnBoard]:Droppable("myDNDname")
-                DPanel[v.NumberOnBoard].Paint = function(me, w, h)
-                    surface.SetDrawColor(150, 100, 100, 200)
-                    surface.DrawRect(0, 0, w, h)
-                    draw.SimpleText("DP Slot " .. v.NumberOnBoard, "DermaDefault", w / 2, h / 2, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-                end
-            end
-        end
+        if v.Slots == nil then v.Slots = 1 end
+        print(v.model)
+        but[v.Slots] = vgui.Create('DImageButton')
+        but[v.Slots]:SetImage(v.model)
+        but[v.Slots]:Dock(FILL)
+        but[v.Slots]:SetParent(pnl[v.NumberOnBoard])
+        but[v.Slots]:Droppable("myDNDname")
     end
 end
 
