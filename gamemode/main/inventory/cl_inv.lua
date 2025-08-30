@@ -10,12 +10,7 @@ local DPanel = {}
 local slotData = {}
 local temp_Tbl = {}
 local NextSlot = {}
-net.Receive("SendSlots", function()
-    slotData = net.ReadTable()
-    net.Start("RequestSlots")
-    net.SendToServer()
-end)
-
+net.Receive("SendSlots", function() slotData = net.ReadTable() or {} end)
 -- example DoDrop, same one you use in Middle()
 local function DoDrop(parentPanel, panels, bDoDrop)
     if not bDoDrop then return end
@@ -25,21 +20,16 @@ local function DoDrop(parentPanel, panels, bDoDrop)
         local midIndex = table.KeyFromValue(pnl, parentPanel) or 0
         local botIndex = table.KeyFromValue(DPanel, parentPanel) or 0
         -- figure out which slot this panel used to belong to
+        local Slotidx = midIndex > 0 and midIndex or botIndex > 0 and botIndex or 1
         for i = 1, #pnl do
-            --if but[i] ~= panel or DPanel[i] ~= panel then slotData[i] = nil end
-            print(midIndex, botIndex, i)
-            if but[i] == panel or DPanel[i] == panel then
-                slotData[midIndex > 0 and midIndex or botIndex > 0 and botIndex or 1] = {
-                    NumberOnBoard = midIndex > 0 and midIndex or botIndex > 0 and botIndex or 1,
+            if but[i] == panel then
+                slotData[Slotidx] = {
+                    NumberOnBoard = Slotidx,
                     model = "materials/items/tools/rock.png",
                     PanelType = midIndex > 0 and "pnl" or "DPanel",
                 }
-            else
-                slotData[#slotData + 1] = {
-                    NumberOnBoard = midIndex > 0 and midIndex or botIndex > 0 and botIndex or 1,
-                    model = "materials/items/tools/rock.png",
-                    PanelType = midIndex > 0 and "pnl" or "DPanel",
-                }
+
+                if IsValid(but[Slotidx]) then but[Slotidx]:SetParent(Slotidx) end
             end
 
             -- reparent the panel so it visually sticks
@@ -61,7 +51,10 @@ function table.KeyFromValue(tab, val)
     return nil
 end
 
-function Middle()
+function Middle(data)
+    net.Start("RequestSlots")
+    net.SendToServer()
+    if not slotData then return end
     if frame then return end
     frame = vgui.Create("DPanel")
     frame:SetSize(530, 418)
@@ -100,7 +93,6 @@ function Middle()
 
     for k, v in pairs(slotData) do
         if v.Slots == nil then v.Slots = 1 end
-        print(v.model)
         but[v.Slots] = vgui.Create('DImageButton')
         but[v.Slots]:SetImage(v.model)
         but[v.Slots]:Dock(FILL)

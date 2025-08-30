@@ -39,36 +39,31 @@ end)
 local Inventory = FindMetaTable("Player")
 function Inventory:AddItem(wep, slot)
     local data = LoadPlayerSlots(self) or {}
-    
     -- Add a rock to the first slot if empty
-    data[1] = data[1] or {
+    data[1] = {
         NumberOnBoard = 1,
         model = "materials/items/tools/rock.png",
         PanelType = "pnl",
     }
 
     self:Give("weapon_rock")
-
     -- Save to file
     SavePlayerSlots(self, data)
-
     -- Send to client
     net.Start("SendSlots")
     net.WriteTable(data)
     net.Send(self)
 end
 
-net.Receive("DropASlot", function(len,ply)
+net.Receive("DropASlot", function(len, ply)
     local tbl = net.ReadTable()
     PrintTable(tbl)
-    //ply:DropWeapon(ply:GetWeapon(tbl))
+    --ply:DropWeapon(ply:GetWeapon(tbl))
 end)
 
 hook.Add("PlayerSpawn", "SendSlotsOnSpawn", function(ply)
     if not IsValid(ply) then return end
-
     local data = LoadPlayerSlots(ply)
-
     -- Ensure at least a rock exists
     if not data[1] then
         ply:AddItem()
