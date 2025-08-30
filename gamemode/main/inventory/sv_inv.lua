@@ -10,6 +10,13 @@ if not file.IsDir(slotDir, "DATA") then file.CreateDir(slotDir) end
 local function SavePlayerSlots(ply, data)
     local sid = ply:SteamID64()
     if not sid then return end
+    local ls = 0
+    for k, v in pairs(data) do
+        if v.LastSlot == ls then ls = v.LastSlot end
+    end
+
+    table.remove(data, ls)
+    PrintTable(data)
     file.Write(slotDir .. "/" .. sid .. ".txt", util.TableToJSON(data, true))
 end
 
@@ -24,7 +31,7 @@ end
 
 -- Receive slots from client and save
 net.Receive("SaveSlots", function(len, ply)
-    local data = net.ReadTable() -- Consider using net.ReadString() + util.JSONToTable for safety
+    local data = net.ReadTable()
     SavePlayerSlots(ply, data)
 end)
 
@@ -32,24 +39,54 @@ end)
 net.Receive("RequestSlots", function(len, ply)
     local data = LoadPlayerSlots(ply)
     net.Start("SendSlots")
-    net.WriteTable(data) -- Consider net.WriteString(util.TableToJSON(data))
+    net.WriteTable(data)
     net.Send(ply)
 end)
 
 local Inventory = FindMetaTable("Player")
 function Inventory:AddItem(wep, slot)
     local data = LoadPlayerSlots(self) or {}
-    -- Add a rock to the first slot if emptyf
-    data[1] = {
-        NumberOnBoard = 1,
-        model = "materials/items/tools/rock.png",
-        PanelType = "pnl",
-    }
+    -- Check if player already has items to prevent duplicates
+    local hasItems = false
+    for i, item in pairs(data) do
+        if item and item.NumberOnBoard then
+            hasItems = true
+            break
+        end
+    end
 
-    self:Give("weapon_rock")
-    -- Save to file
-    SavePlayerSlots(self, data)
-    -- Send to client
+    -- Only add starter item if player has no items
+    if not hasItems then
+        -- Find the first empty slot
+        local emptySlot = 1
+        for i = 1, 36 do
+            local slotOccupied = false
+            for _, item in pairs(data) do
+                if item.NumberOnBoard == i then
+                    slotOccupied = true
+                    break
+                end
+            end
+
+            if not slotOccupied then
+                emptySlot = i
+                break
+            end
+        end
+
+        -- Add starter item to first empty slot
+        table.insert(data, {
+            NumberOnBoard = emptySlot,
+            model = "materials/items/tools/rock.png",
+            PanelType = emptySlot <= 30 and "pnl" or "DPanel",
+        })
+
+        self:Give("weapon_rock")
+        -- Save to file
+        SavePlayerSlots(self, data)
+    end
+
+    -- Always send current data to client
     net.Start("SendSlots")
     net.WriteTable(data)
     net.Send(self)
@@ -61,16 +98,25 @@ net.Receive("DropASlot", function(len, ply)
     --ply:DropWeapon(ply:GetWeapon(tbl))
 end)
 
+-- Track if player has already been given starter items this session
+local playersInitialized = {}
 hook.Add("PlayerSpawn", "SendSlotsOnSpawn", function(ply)
     if not IsValid(ply) then return end
-    local data = LoadPlayerSlots(ply)
-    -- Ensure at least a rock exists
-    if not data[1] then
+    local steamID = ply:SteamID64()
+    if not playersInitialized[steamID] then
+        playersInitialized[steamID] = true
         ply:AddItem()
-        data = LoadPlayerSlots(ply)
+    else
+        -- Just send existing data without adding new items
+        local data = LoadPlayerSlots(ply)
+        net.Start("SendSlots")
+        net.WriteTable(data)
+        net.Send(ply)
     end
+end)
 
-    net.Start("SendSlots")
-    net.WriteTable(data)
-    net.Send(ply)
+-- Clean up tracking when player disconnects
+hook.Add("PlayerDisconnected", "CleanupSlotTracking", function(ply)
+    local steamID = ply:SteamID64()
+    if steamID then playersInitialized[steamID] = nil end
 end)
