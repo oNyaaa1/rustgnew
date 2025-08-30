@@ -17,14 +17,7 @@ end)
 
 -- example DoDrop, same one you use in Middle()
 local function DoDrop(parentPanel, panels, bDoDrop)
-    if not bDoDrop then
-        print(midIndex)
-        net.Start("DropASlot")
-        net.WriteTable(temp_Tbl)
-        net.SendToServer()
-        return
-    end
-
+    if not bDoDrop then return end
     temp_Tbl = temp_Tbl or {}
     for _, panel in ipairs(panels) do
         -- find which slot we dropped into
@@ -35,16 +28,16 @@ local function DoDrop(parentPanel, panels, bDoDrop)
             --if but[i] ~= panel or DPanel[i] ~= panel then slotData[i] = nil end
             print(midIndex, botIndex, i)
             if but[i] == panel or DPanel[i] == panel then
-                slotData[#slotData + 1] = {
-                    NumberOnBoard = midIndex,
-                    Model = "materials/items/tools/rock.png",
-                    PanelType = 1 > 0 and "pnl" or "DPanel",
+                slotData[midIndex > 0 and midIndex or botIndex > 0 and botIndex or 1] = {
+                    NumberOnBoard = midIndex > 0 and midIndex or botIndex > 0 and botIndex or 1,
+                    model = "materials/items/tools/rock.png",
+                    PanelType = midIndex > 0 and "pnl" or "DPanel",
                 }
             else
-                slotData[midIndex] = {
-                    NumberOnBoard = midIndex,
-                    Model = "materials/items/tools/rock.png",
-                    PanelType = "pnl",
+                slotData[#slotData + 1] = {
+                    NumberOnBoard = midIndex > 0 and midIndex or botIndex > 0 and botIndex or 1,
+                    model = "materials/items/tools/rock.png",
+                    PanelType = midIndex > 0 and "pnl" or "DPanel",
                 }
             end
 
@@ -92,66 +85,77 @@ function Middle()
     grid:SetVerticalMargin(2)
     -- Define restricted numbers
     for i = 1, 30 do
-        pnl[i] = vgui.Create("DPanel")
-        pnl[i]:SetTall(80)
-        pnl[i]:Receiver("myDNDname", DoDrop)
-        grid:AddCell(pnl[i])
-        pnl[i].Paint = function(me)
-            surface.SetMaterial(Material("materials/ui/background.png"))
-            surface.SetDrawColor(0, 0, 0, 100)
-            surface.DrawTexturedRect(0, 0, w, h)
-            surface.SetDrawColor(94, 94, 94, 150)
-            surface.DrawRect(0, 0, w, h)
+        if not IsValid(pnl[i]) then
+            pnl[i] = vgui.Create("DPanel")
+            pnl[i]:SetTall(80)
+            pnl[i]:Receiver("myDNDname", DoDrop)
+            grid:AddCell(pnl[i])
+            pnl[i].Paint = function(me)
+                surface.SetMaterial(Material("materials/ui/background.png"))
+                surface.SetDrawColor(0, 0, 0, 100)
+                surface.DrawTexturedRect(0, 0, w, h)
+                surface.SetDrawColor(94, 94, 94, 150)
+                surface.DrawRect(0, 0, w, h)
+            end
         end
     end
 
     for k, v in pairs(slotData) do
+        if not IsValid(but[1]) then
+            print("Panel 0")
+            but[1] = vgui.Create('DImageButton')
+            but[1]:SetModel(v.model)
+            but[1]:Dock(FILL)
+            but[1]:SetParent(pnl[1])
+            but[1]:Droppable("myDNDname")
+        end
+
+        if type(v) ~= "table" then continue end
         if IsValid(but[v.Slots]) then
+            print("Panel 1")
             but[v.Slots] = vgui.Create('DImageButton')
             but[v.Slots]:SetModel(v.model)
             but[v.Slots]:Dock(FILL)
-            but[v.Slots]:SetCamPos(PrevMins:Distance(PrevMaxs) * Vector(0.5, 0.5, 0.5))
-            but[v.Slots]:SetLookAt((PrevMaxs + PrevMins) / 2)
             but[v.Slots]:SetParent(pnl[v.NumberOnBoard])
             but[v.Slots]:Droppable("myDNDname")
         end
 
-        if not IsValid(but[v.Slots]) and IsValid(pnl[v.NumberOnBoard]) then
+        if IsValid(pnl[v.NumberOnBoard]) then
+            print("Panel 2")
             if type(v.model) ~= "string" then continue end
             but[v.Slots] = vgui.Create('DImageButton')
             but[v.Slots]:SetModel(v.model)
             but[v.Slots]:Dock(FILL)
-            but[v.Slots]:SetCamPos(PrevMins:Distance(PrevMaxs) * Vector(0.5, 0.5, 0.5))
-            but[v.Slots]:SetLookAt((PrevMaxs + PrevMins) / 2)
             but[v.Slots]:SetParent(pnl[v.NumberOnBoard])
             but[v.Slots]:Droppable("myDNDname")
         end
     end
 
     for k, v in pairs(slotData) do
-        if type(v.Model) ~= "string" then continue end
-        if not v.Model or v.Model == "" then continue end
+        if type(v) ~= "table" then continue end
+        if not v.model or v.model == "" then continue end
+        local parentPanel = pnl[v.NumberOnBoard]
+        if not IsValid(parentPanel) then continue end
         if v.PanelType == "pnl" then
-            if not IsValid(but[v.NumberOnBoard]) and IsValid(pnl[v.NumberOnBoard]) then
-                but[v.NumberOnBoard] = vgui.Create('DImageButton')
-                but[v.NumberOnBoard]:SetImage(v.Model)
+            if not IsValid(but[v.NumberOnBoard]) then
+                but[v.NumberOnBoard] = vgui.Create("DImageButton")
+                but[v.NumberOnBoard]:SetParent(parentPanel)
                 but[v.NumberOnBoard]:Dock(FILL)
-                but[v.NumberOnBoard]:SetParent(pnl[v.NumberOnBoard])
+                but[v.NumberOnBoard]:SetImage(v.model)
                 but[v.NumberOnBoard]:Droppable("myDNDname")
             end
         elseif v.PanelType == "DPanel" then
-            if not IsValid(DPanel[v.NumberOnBoard]) and IsValid(pnl[v.NumberOnBoard]) then
-                DPanel[v.NumberOnBoard] = vgui.Create('DImageButton')
-                DPanel[v.NumberOnBoard]:SetImage(v.Model)
+            if not IsValid(DPanel[v.NumberOnBoard]) then
+                DPanel[v.NumberOnBoard] = vgui.Create("DImageButton")
+                DPanel[v.NumberOnBoard]:SetParent(parentPanel)
                 DPanel[v.NumberOnBoard]:Dock(FILL)
-                DPanel[v.NumberOnBoard]:SetParent(DPanel[v.NumberOnBoard])
+                DPanel[v.NumberOnBoard]:SetImage(v.model)
+                DPanel[v.NumberOnBoard]:Droppable("myDNDname")
                 DPanel[v.NumberOnBoard].Paint = function(me, w, h)
                     surface.SetDrawColor(150, 100, 100, 200)
                     surface.DrawRect(0, 0, w, h)
                     draw.SimpleText("DP Slot " .. v.NumberOnBoard, "DermaDefault", w / 2, h / 2, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
                 end
-
-                DPanel[v.NumberOnBoard]:Droppable("myDNDname")
             end
         end
     end

@@ -167,14 +167,13 @@ function SWEP:Think()
                 end
 
                 tr.Entity:TakeDamageInfo(dmg)
-                self:GetInventorySlot():SetWear(self:GetInventorySlot():GetWear() - 8)
-                pl:SyncSlot(self.InventorySlot)
-                local Harvest = self.HarvestAmount[tr.Entity:GetClass()]
-                if Harvest and Harvest > 0 then tr.Entity:Harvest(dmg, Harvest, self.BypassWeakspot) end
+                --self:GetInventorySlot():SetWear(self:GetInventorySlot():GetWear() - 8)
+                --pl:SyncSlot(self.InventorySlot)
+                --local Harvest = self.HarvestAmount[tr.Entity:GetClass()]
+                --if Harvest and Harvest > 0 then tr.Entity:Harvest(dmg, Harvest, self.BypassWeakspot) end
             end
         end
-
-        pl:HaltSprint(0.6)
+        --pl:HaltSprint(0.6)
     end
 
     if pl:KeyDown(IN_ATTACK2) then
